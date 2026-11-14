@@ -1,0 +1,45 @@
+
+name: Descompactar e compilar Ango App
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ango-app-producao-supabase.zip'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter ficheiros
+        uses: actions/checkout@v4
+
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Descompactar projeto
+        run: |
+          mkdir -p app-source
+          unzip -o ango-app-producao-supabase.zip -d app-source
+
+      - name: Instalar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compilar APK
+        run: |
+          cd app-source
+          gradle assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ango-App-APK
+          path: app-source/app/build/outputs/apk/debug/*.apk
+          
